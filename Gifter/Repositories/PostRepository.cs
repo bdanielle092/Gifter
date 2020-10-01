@@ -130,6 +130,60 @@ namespace Gifter.Repositories
                 }
             }
         }
+        public Post GetPostByIdWithComments(int id)
+        {
+            using (var conn = Connection)
+            {
+                conn.Open();
+                using (var cmd = conn.CreateCommand())
+                {
+                    cmd.CommandText = @"
+                             SELECT p.Id AS PostId, p.Title, p.Caption, p.DateCreated, p.ImageUrl, p.UserProfileId AS PostUserProfileId ,
+                            c.Id AS CommentId, c.Message, c.UserProfileId AS CommentUserProfileId
+                            FROM Post p
+                            LEFT JOIN Comment c ON c.PostId = p.id
+                          WHERE p.Id = @id";
+                    // this is getting the id for the post
+                    DbUtils.AddParameter(cmd, "@Id", id);
+
+                    var reader = cmd.ExecuteReader();
+                    Post post = null;
+                    while (reader.Read())
+                    {
+                        
+                        if (post == null)
+                        { 
+                            post = new Post()
+                        {
+                                Id = id,
+                            //Id = DbUtils.GetInt(reader, "PostId"),
+                            // this is using the Get String helper method  and pulling the info from the title column
+                            Title = DbUtils.GetString(reader, "Title"),
+                            Caption = DbUtils.GetString(reader, "Caption"),
+                            DateCreated = DbUtils.GetDateTime(reader, "DateCreated"),
+                            ImageUrl = DbUtils.GetString(reader, "ImageUrl"),
+                            UserProfileId = DbUtils.GetInt(reader, "PostUserProfileId"),
+                            Comments = new List<Comment>()
+                        };
+                            if (DbUtils.IsNotDbNull(reader, "CommentId"))
+                            {
+                                Comment comment = new Comment
+                                {
+                                    Id = DbUtils.GetInt(reader, "CommentId"),
+                                    Message = DbUtils.GetString(reader, "Message"),
+                                    PostId = DbUtils.GetInt(reader, "postId"),
+                                    UserProfileId = DbUtils.GetInt(reader, "CommentUserProfileId")
+                                };
+                                post.Comments.Add(comment);
+                            }
+                        }
+                     }
+                    reader.Close();
+
+                    return post;
+                }
+            }
+        }
         public Post GetById(int id)
         {
             using (var conn = Connection)
@@ -155,17 +209,17 @@ namespace Gifter.Repositories
 
                         post = new Post()
                         {
-                            Id = id,
+                            Id = DbUtils.GetInt(reader, "PostId"),
                             // this is using the Get String helper method  and pulling the info from the title column
                             Title = DbUtils.GetString(reader, "Title"),
                             Caption = DbUtils.GetString(reader, "Caption"),
-                            DateCreated = DbUtils.GetDateTime(reader, "DateCreated"),
-                            ImageUrl = DbUtils.GetString(reader, "ImageUrl"),
+                            DateCreated = DbUtils.GetDateTime(reader, "PostDateCreated"),
+                            ImageUrl = DbUtils.GetString(reader, "PostImageUrl"),
                             UserProfileId = DbUtils.GetInt(reader, "UserProfileId"),
-                            // this is adding in the UserProfile info.
-                            UserProfile = new UserProfile()
+                            // this is adding in the UserProfile info
+                            UserProfile = new UserProfile
                             {
-                                Id = DbUtils.GetInt(reader, "PostUserProfileId"),
+                                Id = DbUtils.GetInt(reader, "UserProfileId"),
                                 Name = DbUtils.GetString(reader, "Name"),
                                 Email = DbUtils.GetString(reader, "Email"),
                                 DateCreated = DbUtils.GetDateTime(reader, "UserProfileDateCreated"),
@@ -204,6 +258,7 @@ namespace Gifter.Repositories
                 }
             }
         }
+   
 
         public void Update(Post post)
         {
