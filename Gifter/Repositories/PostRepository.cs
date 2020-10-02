@@ -172,6 +172,7 @@ namespace Gifter.Repositories
                                     Id = DbUtils.GetInt(reader, "CommentId"),
                                     Message = DbUtils.GetString(reader, "Message"),
                                     PostId = DbUtils.GetInt(reader, "postId"),
+                                    // this is named CommentUserProfile because in the select we said up.UserProfileId AS CommentUserProfileId which we did because post also has a UserPrfileId
                                     UserProfileId = DbUtils.GetInt(reader, "CommentUserProfileId")
                                 };
                                 post.Comments.Add(comment);

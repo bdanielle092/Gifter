@@ -64,15 +64,17 @@ namespace Gifter.Controllers
             var posts = _postRepository.GetAllWithComments();
             return Ok(posts);
         }
-
+        //this is the route 
         [HttpGet("GetPostByIdWithComments/{id}")]
         public IActionResult GetPostByIdWithComments(int id)
         {
             var post = _postRepository.GetPostByIdWithComments(id);
+            //if null return NotFound 
             if (post == null)
             {
                 return NotFound();
             }
+            //otherwise return the single post with comments
             return Ok(post);
         }
     }

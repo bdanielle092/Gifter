@@ -22,7 +22,7 @@ namespace Gifter.Models
         [Required]
         public int UserProfileId { get; set; }
       
-        //this allows us to pull in the userProfile Object info. We can add the userProfile object here because the userProfileId is a property of this calss
+        //UserProfile is a object and this Object is a property of the class Post. We can add the userProfile object here because the userProfileId is a property of this calss
         public UserProfile UserProfile { get; set; }
       
 
