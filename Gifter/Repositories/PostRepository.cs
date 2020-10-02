@@ -1,6 +1,7 @@
 ﻿using Gifter.Models;
 using Gifter.Utils;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -130,6 +131,129 @@ namespace Gifter.Repositories
                 }
             }
         }
+        // DateTime because we want to get the date. Our where is post.DateCreated >= the criterion we want back. This will show the date we put in and any date after that
+        public List<Post> Hottest(DateTime criterion, bool sortDescending)
+        {
+            using (var conn = Connection)
+            {
+                conn.Open();
+                using (var cmd = conn.CreateCommand())
+                {
+                    var sql =
+                        @"SELECT p.Id AS PostId, p.Title, p.Caption, p.DateCreated AS PostDateCreated, 
+                        p.ImageUrl AS PostImageUrl, p.UserProfileId,
+
+                        up.Name, up.Bio, up.Email, up.DateCreated AS UserProfileDateCreated, 
+                        up.ImageUrl AS UserProfileImageUrl
+                    FROM Post p 
+                        LEFT JOIN UserProfile up ON p.UserProfileId = up.id
+                    WHERE p.DateCreated >=  @Criterion";
+                    
+                    if (sortDescending)
+                    {
+                        sql += " ORDER BY p.DateCreated DESC";
+                    }
+                    else
+                    {
+                        sql += " ORDER BY p.DateCreated";
+                    }
+
+                    cmd.CommandText = sql;
+                    DbUtils.AddParameter(cmd, "@Criterion", criterion);
+                    var reader = cmd.ExecuteReader();
+
+                    var posts = new List<Post>();
+                    while (reader.Read())
+                    {
+                        posts.Add(new Post()
+                        {
+                            Id = DbUtils.GetInt(reader, "PostId"),
+                            Title = DbUtils.GetString(reader, "Title"),
+                            Caption = DbUtils.GetString(reader, "Caption"),
+                            DateCreated = DbUtils.GetDateTime(reader, "PostDateCreated"),
+                            ImageUrl = DbUtils.GetString(reader, "PostImageUrl"),
+                            UserProfileId = DbUtils.GetInt(reader, "UserProfileId"),
+                            UserProfile = new UserProfile()
+                            {
+                                Id = DbUtils.GetInt(reader, "UserProfileId"),
+                                Name = DbUtils.GetString(reader, "Name"),
+                                Email = DbUtils.GetString(reader, "Email"),
+                                DateCreated = DbUtils.GetDateTime(reader, "UserProfileDateCreated"),
+                                ImageUrl = DbUtils.GetString(reader, "UserProfileImageUrl"),
+                            },
+                        });
+                    }
+
+                    reader.Close();
+
+                    return posts;
+                }
+            }
+        }
+        //Whoever calls search we except to get a list of post and we pass in cristerion and sortDescending which is true or false
+        public List<Post> Search(string criterion, bool sortDescending)
+        {
+            using (var conn = Connection)
+            {
+                conn.Open();
+                using (var cmd = conn.CreateCommand())
+                {
+                    //We are getting data for post and userProfile. We have a sql parameter on line 152
+                    var sql =
+                        @"SELECT p.Id AS PostId, p.Title, p.Caption, p.DateCreated AS PostDateCreated, 
+                        p.ImageUrl AS PostImageUrl, p.UserProfileId,
+
+                        up.Name, up.Bio, up.Email, up.DateCreated AS UserProfileDateCreated, 
+                        up.ImageUrl AS UserProfileImageUrl
+                    FROM Post p 
+                        LEFT JOIN UserProfile up ON p.UserProfileId = up.id
+                  
+                    WHERE p.Title LIKE @Criterion OR p.Caption LIKE @Criterion";
+                    //where the title of the post is exactly like what we typed in or the caption of the post in exactly like the caption we typed in. The where is a filter
+                    // if orderbBy = desc then desc dates, otherwise orderBy dateCreated
+                    if (sortDescending)
+                    {
+                        sql += " ORDER BY p.DateCreated DESC";
+                    }
+                    else
+                    {
+                        sql += " ORDER BY p.DateCreated";
+                    }
+                    //setting our sql parameter here
+                    cmd.CommandText = sql;
+                    // we add the % because its a like which are wildcards online  151
+                    // % is a blank squares in the wheel of fortune. its filling it the blank spaces for you. so if you search ele it should fill in the blanks and bring back televison or elephant
+                    DbUtils.AddParameter(cmd, "@Criterion", $"%{criterion}%");
+                    var reader = cmd.ExecuteReader();
+
+                    var posts = new List<Post>();
+                    while (reader.Read())
+                    {
+                        posts.Add(new Post()
+                        {
+                            Id = DbUtils.GetInt(reader, "PostId"),
+                            Title = DbUtils.GetString(reader, "Title"),
+                            Caption = DbUtils.GetString(reader, "Caption"),
+                            DateCreated = DbUtils.GetDateTime(reader, "PostDateCreated"),
+                            ImageUrl = DbUtils.GetString(reader, "PostImageUrl"),
+                            UserProfileId = DbUtils.GetInt(reader, "UserProfileId"),
+                            UserProfile = new UserProfile()
+                            {
+                                Id = DbUtils.GetInt(reader, "UserProfileId"),
+                                Name = DbUtils.GetString(reader, "Name"),
+                                Email = DbUtils.GetString(reader, "Email"),
+                                DateCreated = DbUtils.GetDateTime(reader, "UserProfileDateCreated"),
+                                ImageUrl = DbUtils.GetString(reader, "UserProfileImageUrl"),
+                            },
+                        });
+                    }
+
+                    reader.Close();
+
+                    return posts;
+                }
+            }
+        }
         public Post GetPostByIdWithComments(int id)
         {
             using (var conn = Connection)
@@ -142,42 +266,45 @@ namespace Gifter.Repositories
                             c.Id AS CommentId, c.Message, c.UserProfileId AS CommentUserProfileId
                             FROM Post p
                             LEFT JOIN Comment c ON c.PostId = p.id
-                          WHERE p.Id = @id";
+                          WHERE p.Id = @Id";
                     // this is getting the id for the post
                     DbUtils.AddParameter(cmd, "@Id", id);
 
                     var reader = cmd.ExecuteReader();
                     Post post = null;
+                  
                     while (reader.Read())
                     {
-                        
+
                         if (post == null)
-                        { 
-                            post = new Post()
                         {
-                                Id = id,
-                            //Id = DbUtils.GetInt(reader, "PostId"),
-                            // this is using the Get String helper method  and pulling the info from the title column
-                            Title = DbUtils.GetString(reader, "Title"),
-                            Caption = DbUtils.GetString(reader, "Caption"),
-                            DateCreated = DbUtils.GetDateTime(reader, "DateCreated"),
-                            ImageUrl = DbUtils.GetString(reader, "ImageUrl"),
-                            UserProfileId = DbUtils.GetInt(reader, "PostUserProfileId"),
-                            Comments = new List<Comment>()
-                        };
-                            if (DbUtils.IsNotDbNull(reader, "CommentId"))
+                            post = new Post()
                             {
-                                Comment comment = new Comment
-                                {
-                                    Id = DbUtils.GetInt(reader, "CommentId"),
-                                    Message = DbUtils.GetString(reader, "Message"),
-                                    PostId = DbUtils.GetInt(reader, "postId"),
-                                    // this is named CommentUserProfile because in the select we said up.UserProfileId AS CommentUserProfileId which we did because post also has a UserPrfileId
-                                    UserProfileId = DbUtils.GetInt(reader, "CommentUserProfileId")
-                                };
-                                post.Comments.Add(comment);
-                            }
+                                Id = id,
+                                //Id = DbUtils.GetInt(reader, "PostId"),
+                                // this is using the Get String helper method  and pulling the info from the title column
+                                Title = DbUtils.GetString(reader, "Title"),
+                                Caption = DbUtils.GetString(reader, "Caption"),
+                                DateCreated = DbUtils.GetDateTime(reader, "DateCreated"),
+                                ImageUrl = DbUtils.GetString(reader, "ImageUrl"),
+                                UserProfileId = DbUtils.GetInt(reader, "PostUserProfileId"),
+
+                                Comments = new List<Comment>()
+                            };
                         }
+                            if (DbUtils.IsNotDbNull(reader, "CommentId"))
+                                {
+                                    Comment comment = new Comment()
+                                    {
+                                        Id = DbUtils.GetInt(reader, "CommentId"),
+                                        Message = DbUtils.GetString(reader, "Message"),
+                                        PostId = DbUtils.GetInt(reader, "postId"),
+                                        // this is named CommentUserProfile because in the select we said up.UserProfileId AS CommentUserProfileId which we did because post also has a UserPrfileId
+                                        UserProfileId = DbUtils.GetInt(reader, "CommentUserProfileId")
+                                    };
+                                    post.Comments.Add(comment);
+                                }
+                        
                      }
                     reader.Close();
 

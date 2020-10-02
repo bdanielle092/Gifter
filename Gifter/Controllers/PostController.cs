@@ -77,5 +77,26 @@ namespace Gifter.Controllers
             //otherwise return the single post with comments
             return Ok(post);
         }
+
+
+        [HttpGet("search")]
+        //we have two parameters 
+        // the q is a search term
+        //sort defines the order in which the search results should be returned. In this example we want "top" results to be first...whatever that means.
+        //t specifies the time limit to search. In this example we only want results from the past month
+        public IActionResult Search(string q, bool sortDesc)
+        {
+            //we pass these parameters into our search method in our repository 
+            return Ok(_postRepository.Search(q, sortDesc));
+        }
+
+        [HttpGet("hottest")]
+        //we have two parameters 
+        //the since are search terms
+        public IActionResult Hottest(DateTime since, bool sortDesc)
+        {
+            //we pass these parameters into our hottest method in our repository 
+            return Ok(_postRepository.Hottest(since, sortDesc));
+        }
     }
 }

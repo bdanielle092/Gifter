@@ -25,8 +25,9 @@ namespace Gifter.Controllers
         {
             return Ok(_userProfileRepository.GetAll());
         }
-
+        //this is the route
         [HttpGet("{id}")]
+        // method parameter
         public IActionResult Get(int id)
         {
             var userProfile = _userProfileRepository.GetById(id);
