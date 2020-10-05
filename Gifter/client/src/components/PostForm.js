@@ -17,7 +17,7 @@ const PostForm = () => {
     const [imageUrl, setImageUrl] = useState("");
     const [title, setTitle] = useState("");
     const [caption, setCaption] = useState("");
-    const [dateCreated, setDateCreate] = useState("")
+    const [dateCreated, setDateCreated] = useState("")
 
     // Use this hook to allow us to programatically redirect users
     const history = useHistory();
@@ -27,7 +27,7 @@ const PostForm = () => {
             imageUrl,
             title,
             caption,
-            userProfileId: +userProfileId,
+            userProfileId: parseInt(userProfileId),
             dateCreated
         };
 
@@ -73,7 +73,7 @@ const PostForm = () => {
                                 <Input
                                     type="datetime-local"
                                     id="dateCreated"
-                                    onChange={(e) => setDateCreate(e.target.value)}
+                                    onChange={(e) => setDateCreated(e.target.value)}
                                 />
                             </FormGroup>
 
