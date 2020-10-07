@@ -1,28 +1,50 @@
-import React from "react";
-import { Switch, Route } from "react-router-dom";
+import React, { useContext } from "react";
+import { Switch, Route, Redirect } from "react-router-dom";
+import { UserProfileContext } from "../providers/UserProfileProvider";
 import PostList from "./PostList";
 import PostForm from "./PostForm";
+import Login from "./Login";
+import Register from "./Register";
+
 // import UserPosts from "./UserPosts";
+export default function ApplicationViews() {
+    const { isLoggedIn } = useContext(UserProfileContext);
 
 
-const ApplicationViews = () => {
     return (
-        <Switch>
-            <Route path="/" exact>
-                <PostList />
-            </Route>
+        <main>
+            <Switch>
 
-            <Route path="/posts/add">
-                <PostForm />
-            </Route>
+                <Route path="/" exact>
+                    {isLoggedIn ? <PostList /> : <Redirect to="/login" />}
+                </Route>
 
-            <Route path="/posts/:id">{/* TODO: Post Details Component */}</Route>
+                <Route path="/add">
+                    {isLoggedIn ? <PostForm /> : <Redirect to="/login" />}
+                </Route>
 
-            {/* <Route path="users/:id">
+                <Route path="/" exact>
+                    <PostList />
+                </Route>
+
+                <Route path="/posts/add">
+                    <PostForm />
+                </Route>
+                <Route path="/login">
+                    <Login />
+                </Route>
+
+                <Route path="/register">
+                    <Register />
+                </Route>
+
+                <Route path="/posts/:id">{/* TODO: Post Details Component */}</Route>
+
+                {/* <Route path="users/:id">
                 <UserPosts />
             </Route> */}
-        </Switch>
+            </Switch>
+        </main>
     );
 };
 
-export default ApplicationViews;

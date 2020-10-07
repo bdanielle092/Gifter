@@ -37,8 +37,6 @@ C:\Users\faith\workspace\Gifter\Gifter\bin\Debug\netcoreapp3.1\runtimes\win-x86\
 C:\Users\faith\workspace\Gifter\Gifter\bin\Debug\netcoreapp3.1\runtimes\win-x86\native\Microsoft.Data.SqlClient.SNI.pdb
 C:\Users\faith\workspace\Gifter\Gifter\bin\Debug\netcoreapp3.1\runtimes\win\lib\netstandard2.0\System.Runtime.Caching.dll
 C:\Users\faith\workspace\Gifter\Gifter\bin\Debug\netcoreapp3.1\runtimes\win\lib\netstandard2.0\System.Security.Cryptography.ProtectedData.dll
-C:\Users\faith\workspace\Gifter\Gifter\obj\Debug\netcoreapp3.1\Gifter.csproj.CoreCompileInputs.cache
-C:\Users\faith\workspace\Gifter\Gifter\obj\Debug\netcoreapp3.1\Gifter.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\faith\workspace\Gifter\Gifter\obj\Debug\netcoreapp3.1\Gifter.csproj.CopyComplete
 C:\Users\faith\workspace\Gifter\Gifter\obj\Debug\netcoreapp3.1\Gifter.dll
 C:\Users\faith\workspace\Gifter\Gifter\obj\Debug\netcoreapp3.1\Gifter.pdb
