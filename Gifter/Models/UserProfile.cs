@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Data.SqlClient.Server;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -25,6 +26,8 @@ namespace Gifter.Models
         public DateTime DateCreated { get; set; }
 
         public string Bio { get; set; }
+
+        //public string UserType { get; private set; }
 
     }
 }
